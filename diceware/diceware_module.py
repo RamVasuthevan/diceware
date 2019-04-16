@@ -1,34 +1,35 @@
 from random import randint
 from string import Template
+from typing import Generator, Union, Optional, List
 
 class diceware_class(object):
 
-    def __init__(self):
-        self.word_list=self.read_word_list()
-        self.value_lsts={"$W":self.word_list,"$U":[x.capitalize() for x in self.word_list],"$S":"!\"#%&'()*+,-./:;<=>?@[\\]^_`{|}~","$N":"0123456789"}
+    def __init__(self,dic_path: str="../diceware/word_list/sindresorhus.txt"):
+        self.dic_path=dic_path
+        self.word_list=self.read_word_list(dic_path)
+        self.value_lsts={"$W":self.word_list,"$S":"!\"#%&'()*+,-./:;<=>?@[\\]^_`{|}~","$N":"0123456789"}
 
-
-    def read_word_list(self,path: str="../diceware/word_list/sindresorhus.txt")->list:
+    def read_word_list(self,dict_path: str="diceware/word_list/sindresorhus.txt")->list:
         word_lst = []
 
-        with open(path, "r") as f:
+        with open(dict_path, "r") as f:
             word_lst = f.read().splitlines()
 
         return word_lst
 
-    def create_password(self,word_lst: list=None,template:str="$U$N $U $U$S $U")->str:
+    def create_password(self,word_lst: list=None,template:str="$W$N $W%N $W")->str:
         if word_lst is None:
-            word_lst=self.read_word_list()
+            word_lst=self.read_word_list(self.dic_path)
 
         password = template
 
-        for key, value in self.value_lsts.items():
-            password=self.replace(password,key,self.create_generator(value))
-
+        password=self.replace(password,"$W",self.create_generator(self.word_list))
+        password=self.replace(password,"$N",self.create_generator("0123456789"))
+        password=self.replace(password,"$S",self.create_generator("$:!#%&'()*+,-./:;<=>?@[]^_`{|}~"))
         return password
 
-    def create_generator(self,defult_lst):
-        def generator(lst=None):
+    def create_generator(self,defult_lst: Union[List,str]):
+        def generator(lst:Optional[Union[list,str]]=None):
             if lst is None:
                 lst=defult_lst
             while True:
